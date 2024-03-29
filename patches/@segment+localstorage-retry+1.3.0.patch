@@ -1,0 +1,123 @@
+diff --git a/node_modules/@segment/localstorage-retry/lib/engine.js b/node_modules/@segment/localstorage-retry/lib/engine.js
+index 5e3fffe..656a774 100644
+--- a/node_modules/@segment/localstorage-retry/lib/engine.js
++++ b/node_modules/@segment/localstorage-retry/lib/engine.js
+@@ -1,7 +1,7 @@
+ 'use strict';
+ 
+ var keys = require('@ndhoule/keys');
+-var uuid = require('uuid').v4;
++var uuid = require('@lukeed/uuid').v4;
+ 
+ var inMemoryStore = {
+   _data: {},
+diff --git a/node_modules/@segment/localstorage-retry/lib/index.js b/node_modules/@segment/localstorage-retry/lib/index.js
+index 34220e8..b494ed0 100644
+--- a/node_modules/@segment/localstorage-retry/lib/index.js
++++ b/node_modules/@segment/localstorage-retry/lib/index.js
+@@ -283,6 +283,7 @@ Queue.prototype._checkReclaim = function() {
+     var storage = self._store.getOriginalEngine();
+     for (var i = 0; i < storage.length; i++) {
+       var k = storage.key(i);
++      if (k === null) continue;
+       var parts = k.split('.');
+       if (parts.length !== 3) continue;
+       if (parts[0] !== name) continue;
+@@ -345,15 +346,41 @@ Queue.prototype._reclaim = function(id) {
+ 
+   this._store.set(this.keys.QUEUE, our.queue);
+ 
+-  // remove all keys
+-  other.remove(this.keys.IN_PROGRESS);
+-  other.remove(this.keys.QUEUE);
+-  other.remove(this.keys.RECLAIM_START);
+-  other.remove(this.keys.RECLAIM_END);
+-  other.remove(this.keys.ACK);
++  // remove all keys one by one, on next tick to avoid NS_ERROR_STORAGE_BUSY error
++  try {
++    this._clearOtherQueue(other, 1);
++  } catch(e) {
++    if(e.name === "NS_ERROR_STORAGE_BUSY" || e.code === "NS_ERROR_STORAGE_BUSY" || e.code === 0x80630001) {
++      try {
++        this._clearOtherQueue(other, 40);
++      } catch(retryError) {
++        console.error(retryError);
++      }
++    } else {
++      console.error(e);
++    }
++  }
+ 
+   // process the new items we claimed
+   this._processHead();
+ };
+ 
++Queue.prototype._clearOtherQueue = function(other, localStorageBackoff) {
++    setTimeout(() => {
++      other.remove(this.keys.IN_PROGRESS);
++      setTimeout(() => {
++        other.remove(this.keys.QUEUE);
++        setTimeout(() => {
++          other.remove(this.keys.RECLAIM_START);
++          setTimeout(() => {
++            other.remove(this.keys.RECLAIM_END);
++            setTimeout(() => {
++              other.remove(this.keys.ACK);
++            }, localStorageBackoff);
++          }, localStorageBackoff);
++        }, localStorageBackoff);
++      }, localStorageBackoff);
++    }, localStorageBackoff);
++}
++
+ module.exports = Queue;
+diff --git a/node_modules/@segment/localstorage-retry/lib/store.js b/node_modules/@segment/localstorage-retry/lib/store.js
+index b9ddc36..5d752f1 100644
+--- a/node_modules/@segment/localstorage-retry/lib/store.js
++++ b/node_modules/@segment/localstorage-retry/lib/store.js
+@@ -6,6 +6,36 @@ var each = require('@ndhoule/each');
+ var keys = require('@ndhoule/keys');
+ var json = JSON;
+ 
++function getCircularReplacer() {
++  const ancestors = [];
++
++  return function (key, value) {
++    if (typeof value !== 'object' || value === null) {
++      return value;
++    }
++
++    // `this` is the object that value is contained in, i.e., its direct parent.
++    while (ancestors.length > 0 && ancestors[ancestors.length - 1] !== this) {
++      ancestors.pop();
++    }
++
++    if (ancestors.includes(value)) {
++      return '[Circular Reference]';
++    }
++
++    ancestors.push(value);
++    return value;
++  };
++};
++
++function stringifyWithoutCircular(obj){
++  try{
++    return JSON.stringify(obj, getCircularReplacer());
++  } catch(e) {
++    return null;
++  }
++}
++
+ /**
+ * Store Implementation with dedicated
+ */
+@@ -26,7 +56,7 @@ Store.prototype.set = function(key, value) {
+   var compoundKey = this._createValidKey(key);
+   if (!compoundKey) return;
+   try {
+-    this.engine.setItem(compoundKey, json.stringify(value));
++    this.engine.setItem(compoundKey, stringifyWithoutCircular(value));
+   } catch (err) {
+     if (isQuotaExceeded(err)) {
+       // switch to inMemory engine

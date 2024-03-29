@@ -1,0 +1,143 @@
+{
+  "name": "@rudderstack/analytics-js-integrations",
+  "version": "3.0.0-beta.24",
+  "private": true,
+  "description": "RudderStack Javascript SDK device mode integrations",
+  "main": "dist/npm/modern/cjs/index.js",
+  "module": "dist/npm/modern/esm/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/npm/index.d.ts",
+      "require": "./dist/npm/modern/cjs/index.js",
+      "import": "./dist/npm/modern/esm/index.js"
+    },
+    "./legacy": {
+      "types": "./dist/npm/index.d.ts",
+      "require": "./dist/npm/legacy/cjs/index.js",
+      "import": "./dist/npm/legacy/esm/index.js"
+    }
+  },
+  "types": "./dist/npm/index.d.ts",
+  "publishConfig": {},
+  "files": [
+    "dist/npm",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "keywords": [
+    "analytics",
+    "rudder"
+  ],
+  "author": "RudderStack",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rudderlabs/rudder-sdk-js.git",
+    "directory": "packages/analytics-js-integrations"
+  },
+  "bugs": {
+    "url": "https://github.com/rudderlabs/rudder-sdk-js/issues"
+  },
+  "homepage": "https://github.com/rudderlabs/rudder-sdk-js/blob/main/packages/analytics-js-integrations/README.md",
+  "scripts": {
+    "clean": "rimraf -rf ./dist && rimraf -rf ./node_modules/.cache && rimraf -rf ./reports",
+    "start": "npm run build && npm run serve",
+    "start:modern": "npm run build:modern && npm run serve",
+    "build": "npm run build:browser",
+    "build:browser:modern": "npm run build:integration:all:modern",
+    "build:browser": "npm run build:integration:all",
+    "build:npm": "exit 0",
+    "build:npm:modern": "exit 0",
+    "build:package": "exit 0",
+    "test": "nx test --maxWorkers=50%",
+    "test:ci": "nx test --parallel=false --configuration=ci --runInBand --maxWorkers=1 --forceExit",
+    "check:lint": "nx lint",
+    "check:lint:ci": "nx lint --configuration=ci",
+    "check:size:build": "npm run build",
+    "check:size": "npm run check:size:build && size-limit",
+    "check:size:json": "size-limit --json",
+    "check:circular": "madge --circular --extensions js,ts src || exit 0",
+    "check:support": "NODE_ENV=production npx browserslist --mobile-to-desktop",
+    "check:support:modern": "NODE_ENV=modern npx browserslist --mobile-to-desktop",
+    "check:duplicates": "jscpd src",
+    "check:security": "npm audit --recursive --audit-level=high",
+    "build:modern": "npm run build:browser:modern",
+    "serve": "npx serve ./dist -p 3005 --cors",
+    "package": "exit 0",
+    "release": "exit 0",
+    "build:integration": "rollup -c --environment PROD_DEBUG,ENV:prod,UGLIFY,INTG_NAME:AdobeAnalytics",
+    "build:integration:dev": "rollup -c --environment PROD_DEBUG,INTG_NAME:AdobeAnalytics",
+    "build:integration:bundle-size": "VISUALIZER=true npm run build:integration",
+    "build:integration:cli": "rollup -c --environment VERSION:$npm_package_version,PROD_DEBUG,ENV:prod,UGLIFY,INTG_NAME:$npm_config_intg",
+    "build:integration:bundle-size:cli": "rollup -c --environment VERSION:$npm_package_version,VISUALIZER:true,PROD_DEBUG,ENV:prod,UGLIFY,INTG_NAME:$npm_config_intg",
+    "build:integration:dev:cli": "rollup -c --environment PROD_DEBUG,INTG_NAME:$npm_config_intg",
+    "build:integration:all": "node -r esm ./scripts/integrationBuildScript.js",
+    "build:integration:all:modern": "BROWSERSLIST_ENV=modern npm run build:integration:all",
+    "build:integration:all:bundle-size": "VISUALIZER=true npm run build:integration:all",
+    "build:integration:all:bundle-size:modern": "VISUALIZER=true npm run build:integration:all:modern"
+  },
+  "dependencies": {
+    "ramda": "0.29.1",
+    "@rudderstack/analytics-js-common": "*",
+    "get-value": "3.0.1",
+    "@ndhoule/each": "2.0.1",
+    "lodash.get": "4.4.2",
+    "lodash.isequal": "4.5.0",
+    "obj-case": "0.2.1",
+    "on-body": "0.0.1",
+    "md5": "2.3.0",
+    "crypto-js": "4.1.1",
+    "is": "3.3.0",
+    "component-each": "0.2.6",
+    "@ndhoule/extend": "2.0.0",
+    "lodash.isundefined": "3.0.1",
+    "lodash.isempty": "4.4.0",
+    "lodash.pickby": "4.6.0",
+    "lodash.tostring": "4.1.4",
+    "@lukeed/uuid": "2.0.1"
+  },
+  "devDependencies": {
+    "@lukeed/uuid": "2.0.1",
+    "@ndhoule/each": "2.0.1",
+    "@ndhoule/extend": "2.0.0",
+    "@rudderstack/analytics-js-common": "*",
+    "component-each": "0.2.6",
+    "crypto-js": "4.2.0",
+    "each": "^2.6.0",
+    "get-value": "3.0.1",
+    "is": "3.3.0",
+    "lodash.get": "4.4.2",
+    "lodash.isempty": "4.4.0",
+    "lodash.isequal": "4.5.0",
+    "lodash.isundefined": "3.0.1",
+    "lodash.pickby": "4.6.0",
+    "lodash.tostring": "4.1.4",
+    "md5": "2.3.0",
+    "obj-case": "0.2.1",
+    "on-body": "0.0.1",
+    "ramda": "0.29.1"
+  },
+  "overrides": {},
+  "browserslist": {
+    "production": [
+      "defaults",
+      "Edge >= 80",
+      "Firefox >= 47",
+      "IE >= 11",
+      "Chrome >= 54",
+      "Safari >= 7",
+      "Opera >= 43"
+    ],
+    "modern": [
+      "defaults",
+      "supports es6-module-dynamic-import"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 edge version",
+      "last 1 safari version"
+    ]
+  }
+}

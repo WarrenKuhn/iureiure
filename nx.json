@@ -1,0 +1,69 @@
+{
+  "workspaceLayout": {
+    "appsDir": "packages",
+    "libsDir": "packages"
+  },
+  "defaultBase": "main",
+  "release": {
+    "projects": ["*"],
+    "projectsRelationship": "independent",
+    "releaseTagPattern": "{projectName}@{version}",
+    "version": {
+      "conventionalCommits": true
+    },
+    "changelog": {
+      "projectChangelogs": {
+        "createRelease": "github"
+      }
+    }
+  },
+  "pluginsConfig": {
+    "@nx/js": {
+      "analyzeSourceFiles": true
+    }
+  },
+  "targetDefaults": {
+    "test": {
+      "inputs": ["default", "^default", "{workspaceRoot}/jest.preset.js"],
+      "cache": true
+    },
+    "version": [
+      {
+        "target": "version",
+        "projects": "dependencies"
+      }
+    ],
+    "build": {
+      "cache": true
+    },
+    "build-browser": {
+      "cache": true
+    },
+    "build-browser-modern": {
+      "cache": true
+    },
+    "build-npm": {
+      "cache": true
+    },
+    "build-npm-modern": {
+      "cache": true
+    },
+    "build-worker": {
+      "cache": true
+    },
+    "build-package": {
+      "cache": true
+    },
+    "build-check-size": {
+      "cache": true
+    },
+    "check:size:build": {
+      "cache": true
+    }
+  },
+  "generators": {
+    "@nx/js:library": {
+      "buildable": true
+    }
+  }
+}

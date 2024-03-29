@@ -1,0 +1,106 @@
+{
+  "name": "@rudderstack/analytics-js-plugins",
+  "version": "3.0.0-beta.19",
+  "private": true,
+  "description": "RudderStack Javascript SDK plugins",
+  "main": "dist/npm/modern/cjs/index.js",
+  "module": "dist/npm/modern/esm/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/npm/index.d.ts",
+      "require": "./dist/npm/modern/cjs/index.js",
+      "import": "./dist/npm/modern/esm/index.js"
+    },
+    "./legacy": {
+      "types": "./index.d.ts",
+      "require": "./dist/npm/legacy/cjs/index.js",
+      "import": "./dist/npm/legacy/esm/index.js"
+    }
+  },
+  "types": "./dist/npm/index.d.ts",
+  "publishConfig": {},
+  "files": [
+    "dist/npm",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "keywords": [
+    "analytics",
+    "rudder"
+  ],
+  "author": "RudderStack",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rudderlabs/rudder-sdk-js.git",
+    "directory": "packages/analytics-js-plugins"
+  },
+  "bugs": {
+    "url": "https://github.com/rudderlabs/rudder-sdk-js/issues"
+  },
+  "homepage": "https://github.com/rudderlabs/rudder-sdk-js/blob/main/packages/analytics-js-plugins/README.md",
+  "scripts": {
+    "clean": "rimraf -rf ./dist && rimraf -rf ./node_modules/.cache && rimraf -rf ./reports",
+    "start": "rollup -c --watch --environment DEV_SERVER,PROD_DEBUG",
+    "start:modern": "BROWSERSLIST_ENV=modern npm run start",
+    "build": "npm run build:browser",
+    "build:browser:modern": "BROWSERSLIST_ENV=modern npm run build:browser",
+    "build:browser": "rollup -c --environment VERSION:$npm_package_version,UGLIFY,PROD_DEBUG,ENV:prod",
+    "build:npm": "rollup -c --environment VERSION:$npm_package_version,ENV:prod,MODULE_TYPE:npm",
+    "build:npm:modern": "BROWSERSLIST_ENV=modern npm run build:npm",
+    "build:package": "npm run build:npm:modern && npm run build:npm",
+    "test": "nx test --maxWorkers=50%",
+    "test:ci": "nx test --parallel=false --configuration=ci --runInBand --maxWorkers=1 --forceExit",
+    "check:lint": "nx lint",
+    "check:lint:ci": "nx lint --configuration=ci",
+    "check:size:build": "npm run build:browser:modern && npm run build:package",
+    "check:size": "npm run check:size:build && size-limit",
+    "check:size:json": "size-limit --json",
+    "check:circular": "madge --circular --extensions js,ts src || exit 0",
+    "check:support": "NODE_ENV=production npx browserslist --mobile-to-desktop",
+    "check:support:modern": "NODE_ENV=modern npx browserslist --mobile-to-desktop",
+    "check:duplicates": "jscpd src",
+    "check:security": "npm audit --recursive --audit-level=high",
+    "build:modern": "npm run build:browser:modern",
+    "package": "npm pack",
+    "release": "npm publish"
+  },
+  "dependencies": {
+    "msw": "2.2.1",
+    "@preact/signals-core": "1.5.1",
+    "ramda": "0.29.1",
+    "crypto-es": "2.0.4",
+    "@bugsnag/js": "6.5.2"
+  },
+  "devDependencies": {
+    "@bugsnag/js": "6.5.2",
+    "@lukeed/uuid": "2.0.1",
+    "@preact/signals-core": "1.5.1",
+    "@rudderstack/analytics-js-common": "*",
+    "crypto-es": "2.1.0",
+    "ramda": "0.29.1"
+  },
+  "overrides": {},
+  "browserslist": {
+    "production": [
+      "defaults",
+      "Edge >= 80",
+      "Firefox >= 47",
+      "IE >= 11",
+      "Chrome >= 54",
+      "Safari >= 7",
+      "Opera >= 43"
+    ],
+    "modern": [
+      "defaults",
+      "supports es6-module-dynamic-import"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 edge version",
+      "last 1 safari version"
+    ]
+  }
+}
